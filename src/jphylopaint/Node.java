@@ -32,6 +32,8 @@ public class Node {
     double time;
     double branchLength;
     
+    int decendentCount;
+    
     String label;
     Map<String, Object> annotations;
 
@@ -43,6 +45,8 @@ public class Node {
         parents = new ArrayList<Node>();
         children = new ArrayList<Node>();
         annotations = new HashMap<String, Object>();
+        
+        decendentCount = -1;
     }
     
     /**
@@ -147,4 +151,21 @@ public class Node {
     public Map<String,Object> getAnnotations() {
         return annotations;
     }
+    
+    /**
+     * Obtain number of decendents.  Nodes in networks are currently counted
+     * multiple times.
+     * 
+     * @return number of decendent nodes
+     */
+    public int getDecendentCount() {
+        if (decendentCount<0) {
+            decendentCount = 0;
+            for (Node child : children)
+                decendentCount += child.getDecendentCount();
+        }
+        
+        return decendentCount;
+    }
+    
 }
