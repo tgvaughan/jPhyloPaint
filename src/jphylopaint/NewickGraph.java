@@ -260,7 +260,7 @@ public class NewickGraph extends Graph {
         if (acceptToken(Token.LABEL, false)
                 || acceptToken(Token.NUM, false)) {
             if (debug)
-                System.out.print(" Lab:" + valueList.get(idx));
+                System.out.print(" Lab:" + valueList.get(idx-1));
             
             node.setLabel(valueList.get(idx));
         }
@@ -282,7 +282,7 @@ public class NewickGraph extends Graph {
             hybrids.get(hlabel).add(node);
             
             if (debug)
-                System.out.print(" Hybrid:" + valueList.get(idx));
+                System.out.print(" Hybrid:" + valueList.get(idx-1));
         }
     }
     
