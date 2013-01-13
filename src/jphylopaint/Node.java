@@ -54,11 +54,25 @@ public class Node {
     }
     
     /**
+     * @return list of children of node.
+     */
+    public List<Node> getChildren() {
+        return children;
+    }
+    
+    /**
      * Add specified parent node to list of parents.
      * @param parent 
      */
     public void addParent(Node parent) {
         parents.add(parent);
+    }
+    
+    /**
+     * @return list of parents of node.
+     */
+    public List<Node> getParents() {
+        return parents;
     }
     
     /**
@@ -78,6 +92,14 @@ public class Node {
     }
     
     /**
+     * Retrieve absolute height/time of node.
+     * @return time
+     */
+    public double getTime() {
+        return time;
+    }
+    
+    /**
      * Set length of branch above node.  (Only makes sense
      * for trees.)
      * 
@@ -85,6 +107,14 @@ public class Node {
      */
     public void setBranchLength(double branchLength) {
         this.branchLength = branchLength;
+    }
+    
+    /**
+     * Retrieve length of branch above node.  (Only makes sense for trees.)
+     * @return 
+     */
+    public double getBranchLength() {
+        return branchLength;
     }
     
     /**
@@ -109,5 +139,12 @@ public class Node {
      */
     public boolean isLeaf() {
         return this.children.isEmpty();
+    }
+    
+    /**
+     * @return Node annotation map.
+     */
+    public Map<String,Object> getAnnotations() {
+        return annotations;
     }
 }

@@ -50,6 +50,7 @@ public class NewickGraph extends Graph {
         this.debug = true;
         doLex();
         doParse();
+        doTidy();
     }
     
     // String and token index:
@@ -129,18 +130,31 @@ public class NewickGraph extends Graph {
         }
     }
     
-    /*
-     * Recursive decent parser code:
+
+    /**
+     * Map from label onto list of hybrid nodes to which that label corresponds.
      */
-    
     Map<String, List<Node>> hybrids;
+    
+    /**
+     * Recursive decent parser.
+     * 
+     * @throws ParseException 
+     */
     private void doParse() throws ParseException {
         hybrids = new HashMap<String,List<Node>>();
         idx = 0;
         ruleG();
     }
     
-    int indent;
+    /**
+     * Indent index.
+     */
+    private int indent;
+    
+    /**
+     * Produce indent specified by indent index.
+     */
     private void indentOut() {
         System.out.print(Strings.repeat(' ', indent));
     }
@@ -361,6 +375,11 @@ public class NewickGraph extends Graph {
         }
     }
     
+    /**
+     * B -> :NUM | eps
+     * @param node
+     * @throws ParseException 
+     */
     private void ruleB(Node node) throws ParseException {
         if (acceptToken(Token.COLON, false)) {
             acceptToken(Token.NUM, true);
@@ -370,4 +389,70 @@ public class NewickGraph extends Graph {
                 System.out.print(" Blength:" + Double.valueOf(valueList.get(idx-1)));
         }
     }
+    
+    /**
+     * Post-parse tidy.
+     * @throws ParseException 
+     */
+    private void doTidy() throws ParseException {
+        
+        /*
+         * Calculate absolute times of nodes.
+         */
+        
+        if (rootNodes.size()>1) {
+            for (Node root : rootNodes) {
+                if (!root.getAnnotations().containsKey("height"))
+                    throw new ParseException("Graphs with multiple roots "
+                            + "require height annotation.", 0);
+                else {
+                    root.setTime(Double.valueOf((String)root.getAnnotations().get("height")));
+                    getTimesRecurse(root);
+                }
+            }
+        } else {
+            Node root = rootNodes.get(0);
+            root.setTime(0.0);
+            getTimesRecurse(root);
+        }
+        
+        /*
+         * Merge hybrid nodes to form network.
+         */
+        
+        for (String hybridLabel : hybrids.keySet()) {
+            
+            // Find primary node:
+            Node primaryNode = null;
+            for (Node hybrid : hybrids.get(hybridLabel)) {
+                if (primaryNode == null || hybrid.getChildren().size()>0)
+                    primaryNode = hybrid;
+            }
+            
+            // Replace all non-primary nodes with primary node:
+            for (Node hybrid : hybrids.get(hybridLabel)) {
+                if (hybrid == primaryNode)
+                    continue;
+                
+                hybrid.getParents().get(0).getChildren().remove(hybrid);
+                hybrid.getParents().get(0).addChild(primaryNode);
+            }
+        }
+    }
+    
+    /**
+     * Recursive traversal of subtree under node to calculate absolute node
+     * times.
+     * 
+     * @param node specifies subtree.
+     */
+    private void getTimesRecurse(Node node) {
+
+        if (!node.isRoot())
+            node.setTime(node.getParents().get(0).getTime()+node.getBranchLength());
+        
+        for (Node child : node.getChildren())
+            getTimesRecurse(child);
+    }
+    
 }
